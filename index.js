@@ -32,7 +32,7 @@ async function checkNewVideo() {
         if (videoId !== lastVideoId) {
             lastVideoId = videoId;
             const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
-            channel.send(`📢 Nowy film na kanale: https://www.youtube.com/watch?v=${videoId}`);
+            channel.send(`@everyone 📢 Nowy film na kanale: https://www.youtube.com/watch?v=${videoId}`);
         }
 
     } catch (err) {
