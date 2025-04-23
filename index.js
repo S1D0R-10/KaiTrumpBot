@@ -63,12 +63,16 @@ function saveLastVideoId(videoId) {
 }
 
 let lastVideoId = loadLastVideoId();
-const sentVideos = loadSentVideos();
+let sentVideos = loadSentVideos();
 
 async function checkNewVideo() {
     try {
         console.log("Sprawdzanie nowego filmu...");
         console.log("Ostatni wysłany film ID:", lastVideoId);
+        console.log("Liczba wysłanych filmów w historii:", sentVideos.length);
+        
+        // Załaduj aktualną listę wysłanych filmów przy każdym sprawdzeniu
+        sentVideos = loadSentVideos();
         
         const res = await axios.get('https://www.googleapis.com/youtube/v3/search', {
             params: {
@@ -96,16 +100,18 @@ async function checkNewVideo() {
             return;
         }
 
-        if (videoId !== lastVideoId) {
-            console.log("Wysyłanie nowego filmu...");
-            lastVideoId = videoId;
-            saveLastVideoId(videoId);
-            saveSentVideo(videoId);
+        // Film jest nowy, dodaj go do listy wysłanych i wyślij powiadomienie
+        console.log("Wysyłanie nowego filmu...");
+        lastVideoId = videoId;
+        saveLastVideoId(videoId);
+        saveSentVideo(videoId);
+        
+        try {
             const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
             await channel.send(`@everyone 📢 Nowy film na kanale: https://www.youtube.com/watch?v=${videoId}`);
             console.log("Film został wysłany pomyślnie");
-        } else {
-            console.log("Ten sam film co ostatnio, pomijam");
+        } catch (err) {
+            console.error("Błąd przy wysyłaniu wiadomości na Discord:", err.message);
         }
 
     } catch (err) {
